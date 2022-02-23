@@ -36,7 +36,7 @@ paginate = 10
   defaultTheme = "auto" # default theme when first visit (auto|dark|light)
 
   # Source URL of the website, will appear in the footer
-  sourceURL = "https://github.com/retrhelo/retrhelo"
+  sourceURL = "https://github.com/retrhelo/retrhelo.github.io"
 
   # Use CloudFlare Workers to accelerate the Google Analytics
   # If you are using this please comment the googleAnalytics above

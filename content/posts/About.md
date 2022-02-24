@@ -1,5 +1,5 @@
 ---
-title: "Introduction"
+title: "About"
 date: 2022-02-23T13:27:52+08:00
 description: "Self introduction"
 tags: ["non-technical"]
@@ -10,6 +10,10 @@ Science and Technology (HUST)][2], interested in Computer Architecture and
 Operating System.
 
 <!--more-->
+
+<div align="center">
+<img src="/images/retrhelo.jpg" width="15%", height="15%"/>
+</div>
 
 Here's some of the work that I paticipate in:
 
@@ -22,6 +26,7 @@ Here's some of the work that I paticipate in:
 [3]: https://github.com/HUST-OS/xv6-k210
 [4]: https://github.com/mit-pdos/xv6-riscv
 [5]: https://github.com/retrhelo/melantha-rs
+[6]: https://github.com/retrhelo/Weedy
 
 ## Contact
 

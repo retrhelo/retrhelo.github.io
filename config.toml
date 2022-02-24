@@ -117,11 +117,11 @@ paginate = 10
     weight = 1
   [[menu.nav]]
     name = "About"
-    url = "/posts/introduction"
+    url = "/posts/about"
     weight = 2
 
   # Outsite links
   [[menu.link]]
-    name = "Github"
+    name = "My Github"
     url = "https://github.com/retrhelo"
     weight = 1

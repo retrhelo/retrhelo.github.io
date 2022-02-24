@@ -19,8 +19,8 @@ about.
 
 At present, I am persuing my bachelor degree at Huazhong University of Science
 and Technology (aka. HUST), and I've received the offer for further graduate
-study, from HUST, too. I can expect to do a lot of writting during my future
-graduate study. It's better that I prepare for it in advance.
+study, from HUST, too. I expect to do a lot of writting during my future graduate
+study. It's better that I prepare for it in advance.
 
 In the end, no matter who you are and how you get to my website, I hope my articles
 can do some help for your problems, or at least be useful. Hope you a nice day!

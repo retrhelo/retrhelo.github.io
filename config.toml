@@ -8,6 +8,9 @@ enableRobotsTXT = true
 disableKinds = ["taxonomy"]
 ignoreErrors = ["error-disable-taxonomy"]
 
+# Disable LiveReload
+disableLiveReload = "true"
+
 ## Change this two to switch between different language
 languageCode = "en"  # For RSS, view https://www.rssboard.org/rss-language-codes
 defaultContentLanguage = "en"  # For HTML page, now support: en, zh-hans, zh-hant, ja, nl, pl, it
@@ -17,15 +20,8 @@ paginate = 10
 
 # googleAnalytics = "UA-000000000-0" # Set your Google Analytics UA here
 
-[outputFormats]
-  [outputFormats.SearchIndex]
-    isPlainText = true
-    notAlternative = true
-    mediaType = "application/json"
-    path = "/search/"
-
 [outputs]
-  home = ["HTML", "RSS", "SearchIndex"]
+  home = ["HTML"]
 
 [permalinks]
   post = "/:section/:filename/" # Custom post links, e.g. "/:year/:month/:title/"

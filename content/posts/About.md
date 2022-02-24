@@ -30,6 +30,5 @@ Here's some of the work that I paticipate in:
 
 ## Contact
 
-Here's my email address, feel free to contact me if necessary.
-
-[artyomliu@foxmail.com](mailto:artyomliu@foxmail.com)
+- E-mail: [artyomliu@foxmail.com](mailto:artyomliu@foxmail.com)
+- Github: [https://github.com/retrhelo](https://github.com/retrhelo)

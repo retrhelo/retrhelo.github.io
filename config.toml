@@ -122,6 +122,6 @@ paginate = 10
 
   # Outsite links
   [[menu.link]]
-    name = "My Github"
-    url = "https://github.com/retrhelo"
+    name = "Github"
+    url = "https://github.com"
     weight = 1

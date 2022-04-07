@@ -1,5 +1,5 @@
 ---
-title: "Status Message in M5"
+title: "Status message in M5"
 date: 2022-03-30T10:54:06+08:00
 tags: ["gem5", "non-technical"]
 ---

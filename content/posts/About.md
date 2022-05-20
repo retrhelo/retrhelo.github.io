@@ -12,7 +12,7 @@ Operating System.
 <!--more-->
 
 <div align="center">
-<img src="/images/rosmontis.jpg" width="15%", height="15%"/>
+<img src="/images/angela.jpg" width="15%", height="15%"/>
 </div>
 
 Here's some of the work that I paticipate in:

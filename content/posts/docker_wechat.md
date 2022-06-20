@@ -45,13 +45,13 @@ docker run \
     -i \
     --name wechat \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -v /home/retrhelo/Downloads/wechat:'home/user/WeChat Files' \
+    -v $HOME/Downloads/wechat:'home/user/WeChat Files' \
     -e DISPLAY \
     -e DOCHAT_DEBUG \
     -e DOCHAT_DPI \
-    -e XMODIFIERS \
-    -e GTK_IM_MODULE \
-    -e QT_IM_MODULE \
+    -e XMODIFIERS=@im=ibus \
+    -e GTK_IM_MODULE=ibus \
+    -e QT_IM_MODULE=ibus \
     --ipc=host \
     --privileged \
     zixia/wechat:latest

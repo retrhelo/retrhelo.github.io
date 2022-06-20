@@ -45,7 +45,7 @@ docker run \
     -i \
     --name wechat \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -v $HOME/Downloads/wechat:'home/user/WeChat Files' \
+    -v "$HOME/Downloads/wechat":'/home/user/WeChat Files' \
     -e DISPLAY \
     -e DOCHAT_DEBUG \
     -e DOCHAT_DPI \
@@ -80,7 +80,7 @@ the container.
 
 ## Run the container
 
-After setting up, start the container with `docker start -i wechat`. It would
+After setting up, start the container with `docker start wechat`. It would
 trigger the following window to appear.
 
 <div align="center">

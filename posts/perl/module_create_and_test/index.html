@@ -1,0 +1,93 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=HandheldFriendly content="True"><meta http-equiv=x-ua-compatible content="IE=edge"><meta http-equiv=cache-control content="no-transform"><meta http-equiv=cache-control content="no-siteapp"><meta name=generator content="Hugo 0.101.0"><link rel="shortcut icon" href=/images/angela.jpg><title>Develop a Perl module: Create and Test - Blog of retrhelo</title><meta name=author content="retrhelo"><meta name=keywords content="perl"><meta property="og:title" content="Develop a Perl module: Create and Test"><meta name=twitter:title content="Develop a Perl module: Create and Test"><meta property="og:type" content="article"><meta property="og:url" content="https://retrhelo.github.io/posts/perl/module_create_and_test/"><meta property="og:description" content="Perl module is a common approach for providing custom sets of functions. But how
+exactly a module is created, developed, and maintained? In this article, I write
+down my experience of developing a tiny module named Camellia::Glue."><meta name=twitter:description content="Perl module is a common approach for providing custom sets of functions. But how
+exactly a module is created, developed, and maintained? In this article, I write
+down my experience of developing a tiny module named Camellia::Glue."><meta name=twitter:card content="summary"><meta property="article:published_time" content="2022-08-06T15:35:35+08:00"><meta property="article:modified_time" content="2022-08-06T15:35:35+08:00"><style>@media(prefers-color-scheme:dark){body[data-theme=auto] img{filter:brightness(60%)}}body[data-theme=dark] img{filter:brightness(60%)}</style><link rel=stylesheet href=https://retrhelo.github.io/assets/css/fuji.min.css></head><body data-theme=auto data-theme-auto=true><script data-cfasync=false>var fujiThemeData=localStorage.getItem("fuji_data-theme");fujiThemeData?fujiThemeData!=="auto"&&document.body.setAttribute("data-theme",fujiThemeData==="dark"?"dark":"light"):localStorage.setItem("fuji_data-theme","auto")</script><header><div class="container-lg clearfix"><div class="col-12 header"><a class=title-main href=https://retrhelo.github.io>Blog of retrhelo</a>
+<span class=title-sub>Peace within.</span></div></div></header><main><div class="container-lg clearfix"><div class="col-12 col-md-9 float-left content"><article><h2 class="post-item post-title"><a href=https://retrhelo.github.io/posts/perl/module_create_and_test/>Develop a Perl module: Create and Test</a></h2><div class="post-item post-meta"><span><i class="iconfont icon-today-sharp"></i>&nbsp;2022-08-06</span>
+<span><i class="iconfont icon-pricetags-sharp"></i>&nbsp;<a href=/tags/perl>perl</a>&nbsp;</span></div><div class="post-content markdown-body"><p>Perl module is a common approach for providing custom sets of functions. But how
+exactly a module is created, developed, and maintained? In this article, I write
+down my experience of developing a tiny module named <code>Camellia::Glue</code>.</p><h2 id=the-scafford>The scafford</h2><p>There are several&rsquo; external modules for building your own module. The simplest is
+<a href=https://metacpan.org/pod/Module::Build::Tiny target=_blank><em>Module::Build::Tiny</em></a>. It&rsquo;s a simple-yet-powerful tool for building,
+testing and distributing your module.</p><p>In my case, I use <a href=https://metacpan.org/pod/Dist::Zilla target=_blank><em>Dist::Zilla</em></a> for module management. It&rsquo;s a widely used
+framework for Perl module development, with detailed tutorials.</p><h2 id=create-the-module>Create the module</h2><p><a href=https://metacpan.org/pod/Dist::Zilla target=_blank><em>Dist::Zilla</em></a> comes with its own command: <code>dzil</code>, which provides various
+subcommand to use. For example, to start a new module, say <code>Camellia::Glue</code>, use
+the command <code>dzil new Camellia::Glue</code>. It creates directory named
+<code>Camellia-Glue</code> with some default files in it.</p><pre><code>$ tree Camellia-Glue/
+Camellia-Glue/
+├── dist.ini
+└── lib
+    └── Camellia
+        └── Glue.pm
+
+2 directories, 2 files
+</code></pre><p>Two files exists in the newly-created workspace, <code>dist.ini</code> and <code>Glue.pm</code>. The
+former one stands for the configuration file for <code>dzil</code> to read, and the latter
+one is very root file of the module.</p><h2 id=export-modules-subroutines>Export module&rsquo;s subroutines</h2><p>Perl uses a CPP-like namespace mechanism to hold all its symbols. To use the
+symbols defined in the module, one must get them exported first. Perl provides
+<a href=https://perldoc.perl.org/Exporter target=_blank><em>Exporter</em></a> for this job.</p><p>For demonstration purpose, I create a <code>hello</code> subroutine in
+<code>lib/Camellia/Glue.pm</code>. The file is shown as follow.</p><pre><code class=language-perl># ABSTRACT: An abstract is required at the head of the file.
+
+use strict;
+use warnings;
+package Camellia::Glue;   # Claim the package
+
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT = qw(hello);  # Export hello so it can be called outside.
+
+sub hello {
+  return &quot;hello world&quot;;
+}
+
+1;    # 1 is required at the end of a module file
+</code></pre><h2 id=write-tests>Write tests</h2><p>It&rsquo;s reasonable to write some tests for the module, to test if it&rsquo;s implemented
+correctly.</p><p>Perl modules follow a fixed file hierarchy. Tests are put in the folder <code>t/</code>,
+besides <code>lib/</code> at the root. All tests files use the suffix <code>.t</code>.</p><p>Here, I write a simple test to determine if <code>hello</code> is exported correctly.</p><pre><code class=language-perl># t/01_hello.t
+
+use warnings;
+use strict;
+
+use Test::Simple tests =&gt; 2;
+use Camellia::Glue;
+
+ok(0 == (&quot;hello world&quot; cmp hello()));
+ok(0 != (&quot;world hello&quot; cmp hello()));
+</code></pre><p><code>ok()</code> is a term of assertion used to determine if expression inside meets
+programmer&rsquo;s desire.</p><p>Please pay attention to the line <code>use Test::Simple tests => 2</code>. This line
+imports a module <code>Test::Simple</code> that&rsquo;s commonly used to write Perl tests. The
+term <code>tests => 2</code> claims that there are 2 tests (or 2 <code>ok()</code>s, to be specific)
+to be checked before the test file runs to its end. An error is raised when less
+<code>ok()</code>s are run.</p><p><code>dzil</code> provides the subcommand <code>dzil test</code> to run all the tests in <code>t/</code> folder.
+By doing so, I receive the following result. It says all tests are passed.</p><pre><code>$ dzil test
+[DZ] building distribution under .build/w82pfJhgyz for installation
+[DZ] beginning to build Camellia-Glue
+[DZ] guessing dist's main_module is lib/Camellia/Glue.pm
+[DZ] writing Camellia-Glue in .build/w82pfJhgyz
+Checking if your kit is complete...
+Looks good
+Generating a Unix-style Makefile
+Writing Makefile for Camellia::Glue
+Writing MYMETA.yml and MYMETA.json
+cp lib/Camellia/Glue.pm blib/lib/Camellia/Glue.pm
+PERL_DL_NONLAZY=1 &quot;/home/retrhelo/Programming/wheel/perl5/bin/perl&quot; &quot;-MExtUtils::Command::MM&quot; &quot;-MTest::Harness&quot; &quot;-e&quot; &quot;undef *Test::Harness::Switches; test_harness(0, 'blib/lib', 'blib/arch')&quot; t/*.t
+t/01_hellotest.t .. ok
+All tests successful.
+Files=1, Tests=2,  0 wallclock secs ( 0.01 usr  0.00 sys +  0.02 cusr  0.00 csys =  0.03 CPU)
+Result: PASS
+[DZ] all's well; removing .build/w82pfJhgyz
+</code></pre></div></article><div class="license markdown-body"><blockquote><p>Unless otherwise noted, the content of this site is licensed under <a rel=license href=http://creativecommons.org/licenses/by-nc-sa/4.0/ target=_blank>CC BY-NC-SA 4.0</a>.</p></blockquote></div></div><aside class="col-12 col-md-3 float-left sidebar"><div class="sidebar-item sidebar-pages"><h3>Pages</h3><ul><li><a href=/>Home</a></li><li><a href=/posts/about>About</a></li></ul></div><div class="sidebar-item sidebar-links"><h3>Links</h3><ul><li><a href=https://github.com target=_blank><span>Github</span></a></li></ul></div><div class="sidebar-item sidebar-tags"><h3>Tags</h3><div><span><a href=/tags/docker/>docker</a></span>
+<span><a href=/tags/gem5/>gem5</a></span>
+<span><a href=/tags/non-technical/>non-technical</a></span>
+<span><a href=/tags/perl/>perl</a></span>
+<span><a href=/tags/writting/>writting</a></span></div></div><div class="sidebar-item sidebar-toc"><h3>Table of Contents</h3><nav id=TableOfContents><ul><li><a href=#the-scafford>The scafford</a></li><li><a href=#create-the-module>Create the module</a></li><li><a href=#export-modules-subroutines>Export module&rsquo;s subroutines</a></li><li><a href=#write-tests>Write tests</a></li></ul></nav></div></aside></div><div class=btn><div class=btn-menu id=btn-menu><i class="iconfont icon-grid-sharp"></i></div><div class=btn-toggle-mode><i class="iconfont icon-contrast-sharp"></i></div><div class=btn-scroll-top><i class="iconfont icon-chevron-up-circle-sharp"></i></div></div><aside class=sidebar-mobile style=display:none><div class=sidebar-wrapper><div class="sidebar-item sidebar-pages"><h3>Pages</h3><ul><li><a href=/>Home</a></li><li><a href=/posts/about>About</a></li></ul></div><div class="sidebar-item sidebar-links"><h3>Links</h3><ul><li><a href=https://github.com target=_blank><span>Github</span></a></li></ul></div><div class="sidebar-item sidebar-tags"><h3>Tags</h3><div><span><a href=/tags/docker/>docker</a></span>
+<span><a href=/tags/gem5/>gem5</a></span>
+<span><a href=/tags/non-technical/>non-technical</a></span>
+<span><a href=/tags/perl/>perl</a></span>
+<span><a href=/tags/writting/>writting</a></span></div></div><div class="sidebar-item sidebar-toc"><h3>Table of Contents</h3><nav id=TableOfContents><ul><li><a href=#the-scafford>The scafford</a></li><li><a href=#create-the-module>Create the module</a></li><li><a href=#export-modules-subroutines>Export module&rsquo;s subroutines</a></li><li><a href=#write-tests>Write tests</a></li></ul></nav></div></div></aside></main><footer><div class="container-lg clearfix"><div class="col-12 footer"><span>&copy; 2022-2022
+<a href=https://retrhelo.github.io>retrhelo</a>
+| <a href=https://github.com/retrhelo/retrhelo.github.io>Source code</a>
+| Powered by <a href=https://github.com/dsrkafuu/hugo-theme-fuji/ target=_blank>Fuji-v2</a> & <a href=https://gohugo.io/ target=_blank>Hugo</a></span></div></div></footer><script defer src=https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/prismjs@1.27.0/components/prism-core.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/prismjs@1.27.0/plugins/autoloader/prism-autoloader.min.js></script>
+<script defer src=/assets/js/fuji.min.js></script></body></html>

@@ -48,7 +48,7 @@ scons build/RISCV/gem5.opt
 Please notice that the building takes a really long time. `-jN` flag can be used
 for multi-tasking to save time, just like the Makefile.
 
-## Acknoledgements
+## Acknowledgements
 
 Most of the contents in this article are from gem5's [official site][1] and the
 [document][2]. Please refer to the document for more detailed information.

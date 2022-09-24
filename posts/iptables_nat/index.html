@@ -1,0 +1,75 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=HandheldFriendly content="True"><meta http-equiv=x-ua-compatible content="IE=edge"><meta http-equiv=cache-control content="no-transform"><meta http-equiv=cache-control content="no-siteapp"><meta name=generator content="Hugo 0.104.0"><link rel="shortcut icon" href=/images/angela.jpg><title>Setting NAT with iptables - Blog of retrhelo</title><meta name=author content="retrhelo"><meta name=keywords content="network"><meta property="og:title" content="Setting NAT with iptables"><meta name=twitter:title content="Setting NAT with iptables"><meta property="og:type" content="article"><meta property="og:url" content="https://retrhelo.github.io/posts/iptables_nat/"><meta property="og:description" content="Background
+Network Address Translation (NAT) is a common use case in network configuration.
+It allows the network manager to translate network address from one into the
+other, effectively hiding the original IP address."><meta name=twitter:description content="Background
+Network Address Translation (NAT) is a common use case in network configuration.
+It allows the network manager to translate network address from one into the
+other, effectively hiding the original IP address."><meta name=twitter:card content="summary"><meta property="article:published_time" content="2022-09-24T16:46:12+08:00"><meta property="article:modified_time" content="2022-09-24T16:46:12+08:00"><style>@media(prefers-color-scheme:dark){body[data-theme=auto] img{filter:brightness(60%)}}body[data-theme=dark] img{filter:brightness(60%)}</style><link rel=stylesheet href=https://retrhelo.github.io/assets/css/fuji.min.css></head><body data-theme=auto data-theme-auto=true><script data-cfasync=false>var fujiThemeData=localStorage.getItem("fuji_data-theme");fujiThemeData?fujiThemeData!=="auto"&&document.body.setAttribute("data-theme",fujiThemeData==="dark"?"dark":"light"):localStorage.setItem("fuji_data-theme","auto")</script><header><div class="container-lg clearfix"><div class="col-12 header"><a class=title-main href=https://retrhelo.github.io>Blog of retrhelo</a>
+<span class=title-sub>Peace within.</span></div></div></header><main><div class="container-lg clearfix"><div class="col-12 col-md-9 float-left content"><article><h2 class="post-item post-title"><a href=https://retrhelo.github.io/posts/iptables_nat/>Setting NAT with iptables</a></h2><div class="post-item post-meta"><span><i class="iconfont icon-today-sharp"></i>&nbsp;2022-09-24</span>
+<span><i class="iconfont icon-pricetags-sharp"></i>&nbsp;<a href=/tags/network>network</a>&nbsp;</span></div><div class="post-content markdown-body"><h2 id=background>Background</h2><p>Network Address Translation (NAT) is a common use case in network configuration.
+It allows the network manager to translate network address from one into the
+other, effectively hiding the original IP address.</p><p>Here is a <a href=https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/security_guide/sec-configuring_nat_using_nftables target=_blank>document</a> from RedHat giving brief introduction about different
+NAT types.</p><ul><li><p>Masquerading</p></li><li><p>Source NAT (SNAT)</p></li><li><p>Destination NAT (DNAT)</p></li><li><p>Redirect</p></li></ul><p>This article focuses on <em>Masquerading</em> among all these types. It is the very NAT
+type to change the source IP address of packets. It&rsquo;s widely used at network
+gateways, mapping the source IP address from a certain internal subnet to a
+public IP address. Such ability is useful when you don&rsquo;t have enough public IP
+addresses for each subnet hosts, or want to hide internal network details for
+security reasons.</p><p><code>iptables</code> is the classic tool in Linux for packet filtering and NAT. It
+provides simple yet powerful means to apply management rules. For a detailed
+manual about it, refer to <a href=https://linux.die.net/man/8/iptables target=_blank>this site</a>.</p><h2 id=describing-the-problem>Describing the Problem</h2><p>The problem I try to demonstrate in this article is about setting a gateway for
+an internal subnet. There&rsquo;re two hosts in my scenario. They are connected
+together via a 100Mbps switch with wired connection, assigned each a static IP
+address to form the network.</p><div align=center><img src=/images/iptables_nat_network_topo.png width=70% , heights=70%></div><p>In addition, the laptop is also capable of creating wireless connection to the
+school&rsquo;s public network. The goal is to make the laptop the gateway of the my
+subnet, allowing Internet access for the workstation, while hiding it from the
+outside.</p><h2 id=the-solution>The Solution</h2><h3 id=enable-packet-forwarding>Enable packet forwarding</h3><p>Packet forwarding is to forward packets from one interface to another. Here in
+my case, I should forward all packets from <code>enp5s0</code> to <code>wlp3s0</code>. Generally, the
+Linux kernel is compiled with the functionality to forward packets.</p><pre><code class=language-shell># Access the system configuration to check if packet forwarding is enabled.
+cat /proc/sys/net/ipv4/ip_forward
+
+# The content should be &quot;1&quot; if it's enabled. Otherwise try writing &quot;1&quot; to it in
+# order to enable.
+echo 1 &gt;/proc/sys/net/ipv4/ip_forward
+
+# In order to make the changes permanent, write following lines into
+# /etc/sysctl.conf.
+echo &quot;net.ipv4.ip_forward = 1&quot; &gt;&gt;/etc/sysctl.conf
+</code></pre><h3 id=apply-iptables-rules>Apply <code>iptables</code> rules</h3><p>The solution can be quite simple with the help of <code>iptables</code>. The following
+rules should be set.</p><pre><code class=language-shell># Be noticed that `iptables` must run under `root`
+
+# Forwarding packets from `enp5s0` to `wlp3s0`
+iptables -A FORWARD -i enp5s0 -o wlp3s0 -j ACCEPT
+
+# Enabling address masquerade on `wlp3s0`
+iptables -t nat -A POSTROUTING -o wlp3s0 -j MASQUERADE
+
+# Save configurations permanently
+iptables-save &gt;/etc/sysconfig/iptables
+</code></pre><p>These commands should do the work. For a more detailed explanation about the
+commands above, please refer to the <code>iptables</code> <a href=https://linux.die.net/man/8/iptables target=_blank>manual</a>.</p><h3 id=iptables-and-firewalld><code>iptables</code> and <code>firewalld</code></h3><p>In case you&rsquo;re a Fedora, RedHat, CentOS, etc. user, it becomes a little tricky
+to handle the <code>iptables</code> rules. Since RedHat is deploying its brand-new
+<code>firewalld</code> solution for network management, it brings some conflicts between
+<code>iptables</code> and <code>firewalld</code>.</p><p>To solve the conflicts, one have to choose between them, enabling one while
+disabling the other in <code>systemctl</code>. Since it&rsquo;s said that <code>iptables</code> is getting
+deprecated in the system, it may be better to use <code>firewalld</code>. But here I stick
+to <code>iptables</code> to leave things simple (And it&rsquo;s easier to find tutorials for
+<code>iptables</code>).</p><p>On Fedora 36 what I&rsquo;m using, because of the existence of <code>firewalld</code>, the
+package <code>iptables-services</code> is by default uninstalled, thus have to be handled
+manually with <code>dnf install</code>.</p></div></article><div class="license markdown-body"><blockquote><p>Unless otherwise noted, the content of this site is licensed under <a rel=license href=http://creativecommons.org/licenses/by-nc-sa/4.0/ target=_blank>CC BY-NC-SA 4.0</a>.</p></blockquote></div></div><aside class="col-12 col-md-3 float-left sidebar"><div class="sidebar-item sidebar-pages"><h3>Pages</h3><ul><li><a href=/>Home</a></li><li><a href=/posts/about>About</a></li></ul></div><div class="sidebar-item sidebar-links"><h3>Links</h3><ul><li><a href=https://github.com target=_blank><span>Github</span></a></li></ul></div><div class="sidebar-item sidebar-tags"><h3>Tags</h3><div><span><a href=/tags/docker/>docker</a></span>
+<span><a href=/tags/gem5/>gem5</a></span>
+<span><a href=/tags/network/>network</a></span>
+<span><a href=/tags/non-technical/>non-technical</a></span>
+<span><a href=/tags/perl/>perl</a></span>
+<span><a href=/tags/writting/>writting</a></span></div></div><div class="sidebar-item sidebar-toc"><h3>Table of Contents</h3><nav id=TableOfContents><ul><li><a href=#background>Background</a></li><li><a href=#describing-the-problem>Describing the Problem</a></li><li><a href=#the-solution>The Solution</a><ul><li><a href=#enable-packet-forwarding>Enable packet forwarding</a></li><li><a href=#apply-iptables-rules>Apply <code>iptables</code> rules</a></li><li><a href=#iptables-and-firewalld><code>iptables</code> and <code>firewalld</code></a></li></ul></li></ul></nav></div></aside></div><div class=btn><div class=btn-menu id=btn-menu><i class="iconfont icon-grid-sharp"></i></div><div class=btn-toggle-mode><i class="iconfont icon-contrast-sharp"></i></div><div class=btn-scroll-top><i class="iconfont icon-chevron-up-circle-sharp"></i></div></div><aside class=sidebar-mobile style=display:none><div class=sidebar-wrapper><div class="sidebar-item sidebar-pages"><h3>Pages</h3><ul><li><a href=/>Home</a></li><li><a href=/posts/about>About</a></li></ul></div><div class="sidebar-item sidebar-links"><h3>Links</h3><ul><li><a href=https://github.com target=_blank><span>Github</span></a></li></ul></div><div class="sidebar-item sidebar-tags"><h3>Tags</h3><div><span><a href=/tags/docker/>docker</a></span>
+<span><a href=/tags/gem5/>gem5</a></span>
+<span><a href=/tags/network/>network</a></span>
+<span><a href=/tags/non-technical/>non-technical</a></span>
+<span><a href=/tags/perl/>perl</a></span>
+<span><a href=/tags/writting/>writting</a></span></div></div><div class="sidebar-item sidebar-toc"><h3>Table of Contents</h3><nav id=TableOfContents><ul><li><a href=#background>Background</a></li><li><a href=#describing-the-problem>Describing the Problem</a></li><li><a href=#the-solution>The Solution</a><ul><li><a href=#enable-packet-forwarding>Enable packet forwarding</a></li><li><a href=#apply-iptables-rules>Apply <code>iptables</code> rules</a></li><li><a href=#iptables-and-firewalld><code>iptables</code> and <code>firewalld</code></a></li></ul></li></ul></nav></div></div></aside></main><footer><div class="container-lg clearfix"><div class="col-12 footer"><span>&copy; 2022-2022
+<a href=https://retrhelo.github.io>retrhelo</a>
+| <a href=https://github.com/retrhelo/retrhelo.github.io>Source code</a>
+| Powered by <a href=https://github.com/dsrkafuu/hugo-theme-fuji/ target=_blank>Fuji-v2</a> & <a href=https://gohugo.io/ target=_blank>Hugo</a></span></div></div></footer><script defer src=https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/lazysizes@5.3.2/lazysizes.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/prismjs@1.27.0/components/prism-core.min.js></script>
+<script defer src=https://cdn.jsdelivr.net/npm/prismjs@1.27.0/plugins/autoloader/prism-autoloader.min.js></script>
+<script defer src=/assets/js/fuji.min.js></script></body></html>
